@@ -1,14 +1,29 @@
 const express = require("express");
+
 const router = express.Router();
 
-const verifyToken = require("../middleware/authMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.get("/profile", verifyToken, (req, res) => {
-    res.json({
-        success: true,
-        message: "Protected Route Accessed",
-        user: req.user,
-    });
-});
+
+// Protected Test Route
+
+router.get(
+    "/profile",
+    authMiddleware,
+    (req, res) => {
+
+        res.status(200).json({
+
+            success: true,
+
+            message: "Protected Route Accessed",
+
+            user: req.user
+
+        });
+
+    }
+);
+
 
 module.exports = router;
