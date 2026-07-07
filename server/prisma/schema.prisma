@@ -7,9 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//
 // =====================
 // USER MANAGEMENT
 // =====================
+//
 
 model User {
   id        Int      @id @default(autoincrement())
@@ -22,19 +24,17 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
-// =====================
-// USER ROLES
-// =====================
-
 enum Role {
   ADMIN
   MANAGER
   EMPLOYEE
 }
 
+//
 // =====================
-// INVENTORY TRANSACTION TYPES
+// INVENTORY TRANSACTION
 // =====================
+//
 
 enum TransactionType {
   STOCK_IN
@@ -42,9 +42,23 @@ enum TransactionType {
   ADJUSTMENT
 }
 
+//
 // =====================
-// CATEGORY MANAGEMENT
+// PURCHASE STATUS
 // =====================
+//
+
+enum PurchaseStatus {
+  PENDING
+  RECEIVED
+  CANCELLED
+}
+
+//
+// =====================
+// CATEGORY
+// =====================
+//
 
 model Category {
   id          Int      @id @default(autoincrement())
@@ -57,9 +71,11 @@ model Category {
   updatedAt   DateTime @updatedAt
 }
 
+//
 // =====================
-// PRODUCT MANAGEMENT
+// PRODUCT
 // =====================
+//
 
 model Product {
   id          Int      @id @default(autoincrement())
@@ -74,32 +90,38 @@ model Product {
 
   transactions InventoryTransaction[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  purchaseItems PurchaseItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+//
 // =====================
 // INVENTORY TRANSACTIONS
 // =====================
+//
 
 model InventoryTransaction {
-  id         Int             @id @default(autoincrement())
+  id        Int             @id @default(autoincrement())
 
-  productId  Int
-  product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  type       TransactionType
+  type      TransactionType
 
-  quantity   Int
+  quantity  Int
 
-  remarks    String?
+  remarks   String?
 
-  createdAt  DateTime        @default(now())
+  createdAt DateTime @default(now())
 }
 
+//
 // =====================
-// SUPPLIER MANAGEMENT
+// SUPPLIER
 // =====================
+//
 
 model Supplier {
   id          Int      @id @default(autoincrement())
@@ -109,13 +131,71 @@ model Supplier {
   phone       String?
   address     String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  purchases   Purchase[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+//
 // =====================
-// CUSTOMER MANAGEMENT
+// PURCHASE
 // =====================
+//
+
+model Purchase {
+
+  id Int @id @default(autoincrement())
+
+  invoiceNumber String @unique
+
+  supplierId Int
+
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+
+  purchaseDate DateTime @default(now())
+
+  totalAmount Float
+
+  status PurchaseStatus @default(PENDING)
+
+  items PurchaseItem[]
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+//
+// =====================
+// PURCHASE ITEMS
+// =====================
+//
+
+model PurchaseItem {
+
+  id Int @id @default(autoincrement())
+
+  purchaseId Int
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  productId Int
+
+  product Product @relation(fields: [productId], references: [id])
+
+  quantity Int
+
+  unitPrice Float
+
+  totalPrice Float
+}
+
+//
+// =====================
+// CUSTOMER
+// =====================
+//
 
 model Customer {
   id        Int      @id @default(autoincrement())
