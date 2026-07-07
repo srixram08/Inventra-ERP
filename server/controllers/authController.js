@@ -2,110 +2,141 @@ const prisma = require("../config/prisma");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+console.log("✅ authController.js loaded successfully");
+
+// =========================
 // Register User
+// =========================
 const register = async (req, res) => {
-    try {
-        const { name, email, password, role } = req.body;
+  try {
+    const { name, email, password, role } = req.body;
 
-        const existingUser = await prisma.user.findUnique({
-            where: { email }
-        });
+    console.log("\n========== REGISTER ==========");
+    console.log("Request Body:", req.body);
 
-        if (existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: "Email already exists"
-            });
-        }
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                role
-            }
-        });
-
-        const { password: _, ...userWithoutPassword } = user;
-
-        res.status(201).json({
-            success: true,
-            message: "User Registered Successfully",
-            data: userWithoutPassword
-        });
-
-    } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
     }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    console.log("Generated Hash:", hashedPassword);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role,
+      },
+    });
+
+    // Remove password before sending response
+    const { password: removedPassword, ...userData } = user;
+
+    return res.status(201).json({
+      success: true,
+      message: "User Registered Successfully",
+      data: userData,
+    });
+  } catch (error) {
+    console.error("Register Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
+// =========================
 // Login User
+// =========================
 const login = async (req, res) => {
-    try {
+  try {
+    const { email, password } = req.body;
 
-        const { email, password } = req.body;
+    console.log("\n========== LOGIN ==========");
+    console.log("Email Received:", email);
+    console.log("Password Received:", password);
 
-        const user = await prisma.user.findUnique({
-            where: { email }
-        });
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
+    if (!user) {
+      console.log("❌ User not found");
 
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid password"
-            });
-        }
-
-        const token = jwt.sign(
-            {
-                id: user.id,
-                email: user.email,
-                role: user.role
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "7d"
-            }
-        );
-
-        const { password: _, ...userWithoutPassword } = user;
-
-        res.status(200).json({
-            success: true,
-            message: "Login Successful",
-            token,
-            user: userWithoutPassword
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
+
+    console.log("✅ User Found");
+    console.log("Database Email:", user.email);
+    console.log("Database Password Hash:", user.password);
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    console.log("Password Match:", isMatch);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid password",
+      });
+    }
+
+    // Generate JWT Token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    // Remove password before sending response
+    const { password: removedPassword, ...userData } = user;
+
+    return res.status(200).json({
+      success: true,
+      message: "Login Successful",
+      token,
+      user: userData,
+    });
+  } catch (error) {
+    console.error("Login Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 module.exports = {
-    register,
-    login
+  register,
+  login,
 };
