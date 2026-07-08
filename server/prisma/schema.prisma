@@ -14,11 +14,11 @@ datasource db {
 //
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(EMPLOYEE)
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  role     Role   @default(EMPLOYEE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -32,7 +32,7 @@ enum Role {
 
 //
 // =====================
-// INVENTORY TRANSACTION
+// INVENTORY ENUMS
 // =====================
 //
 
@@ -42,15 +42,15 @@ enum TransactionType {
   ADJUSTMENT
 }
 
-//
-// =====================
-// PURCHASE STATUS
-// =====================
-//
-
 enum PurchaseStatus {
   PENDING
   RECEIVED
+  CANCELLED
+}
+
+enum SaleStatus {
+  PENDING
+  COMPLETED
   CANCELLED
 }
 
@@ -61,14 +61,14 @@ enum PurchaseStatus {
 //
 
 model Category {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
   description String?
 
-  products    Product[]
+  products Product[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 //
@@ -78,19 +78,19 @@ model Category {
 //
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   name        String
   description String?
-  sku         String   @unique
+  sku         String  @unique
   price       Float
-  stock       Int      @default(0)
+  stock       Int     @default(0)
 
-  categoryId  Int
-  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
 
-  transactions InventoryTransaction[]
-
+  transactions  InventoryTransaction[]
   purchaseItems PurchaseItem[]
+  saleItems     SaleItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -98,21 +98,18 @@ model Product {
 
 //
 // =====================
-// INVENTORY TRANSACTIONS
+// INVENTORY
 // =====================
 //
 
 model InventoryTransaction {
-  id        Int             @id @default(autoincrement())
-
+  id        Int     @id @default(autoincrement())
   productId Int
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  type      TransactionType
-
-  quantity  Int
-
-  remarks   String?
+  type     TransactionType
+  quantity Int
+  remarks  String?
 
   createdAt DateTime @default(now())
 }
@@ -124,14 +121,14 @@ model InventoryTransaction {
 //
 
 model Supplier {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   name        String
   companyName String?
-  email       String?  @unique
+  email       String? @unique
   phone       String?
   address     String?
 
-  purchases   Purchase[]
+  purchases Purchase[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,50 +141,39 @@ model Supplier {
 //
 
 model Purchase {
-
-  id Int @id @default(autoincrement())
-
+  id            Int    @id @default(autoincrement())
   invoiceNumber String @unique
 
   supplierId Int
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
 
-  supplier Supplier @relation(fields: [supplierId], references: [id])
-
-  purchaseDate DateTime @default(now())
-
-  totalAmount Float
-
-  status PurchaseStatus @default(PENDING)
+  purchaseDate DateTime       @default(now())
+  totalAmount  Float
+  status       PurchaseStatus @default(RECEIVED)
 
   items PurchaseItem[]
 
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
 }
 
 //
 // =====================
-// PURCHASE ITEMS
+// PURCHASE ITEM
 // =====================
 //
 
 model PurchaseItem {
-
   id Int @id @default(autoincrement())
 
   purchaseId Int
-
-  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
 
   productId Int
+  product   Product @relation(fields: [productId], references: [id])
 
-  product Product @relation(fields: [productId], references: [id])
-
-  quantity Int
-
-  unitPrice Float
-
+  quantity   Int
+  unitPrice  Float
   totalPrice Float
 }
 
@@ -198,16 +184,61 @@ model PurchaseItem {
 //
 
 model Customer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String?  @unique
-  phone     String?
-  address   String?
-  city      String?
-  state     String?
-  country   String?
-  pincode   String?
+  id      Int     @id @default(autoincrement())
+  name    String
+  email   String? @unique
+  phone   String?
+  address String?
+  city    String?
+  state   String?
+  country String?
+  pincode String?
+
+  sales Sale[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+//
+// =====================
+// SALES
+// =====================
+//
+
+model Sale {
+  id            Int    @id @default(autoincrement())
+  invoiceNumber String @unique
+
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  saleDate    DateTime   @default(now())
+  totalAmount Float
+  status      SaleStatus @default(COMPLETED)
+
+  items SaleItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//
+// =====================
+// SALE ITEM
+// =====================
+//
+
+model SaleItem {
+  id Int @id @default(autoincrement())
+
+  saleId Int
+  sale   Sale @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
 }
