@@ -5,117 +5,93 @@ import {
   ShoppingCart,
   Truck,
   FileText,
-  LogOut
+  LogOut,
 } from "lucide-react";
 
+import {
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 
 function Sidebar() {
-
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
     {
       name: "Dashboard",
-      icon: LayoutDashboard
+      icon: LayoutDashboard,
+      path: "/dashboard",
     },
     {
       name: "Products",
-      icon: Package
+      icon: Package,
+      path: "/products",
     },
     {
       name: "Customers",
-      icon: Users
+      icon: Users,
+      path: "/customers",
     },
     {
       name: "Sales",
-      icon: ShoppingCart
+      icon: ShoppingCart,
+      path: "/sales",
     },
     {
       name: "Suppliers",
-      icon: Truck
+      icon: Truck,
+      path: "/suppliers",
     },
     {
       name: "Reports",
-      icon: FileText
-    }
+      icon: FileText,
+      path: "/reports",
+    },
   ];
 
-
-
   const logout = () => {
-
     localStorage.removeItem("token");
-
-    window.location.href = "/";
-
+    navigate("/");
   };
 
-
-
   return (
-
-    <div className="w-64 min-h-screen bg-slate-900 text-white p-5">
-
-
+    <div className="w-64 bg-slate-900 text-white min-h-screen p-5">
       <h1 className="text-2xl font-bold mb-8">
         Inventra ERP
       </h1>
 
+      <div className="space-y-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
 
+          return (
+            <button
+              key={item.name}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center gap-3 p-3 rounded-lg transition ${
+                location.pathname === item.path
+                  ? "bg-blue-600"
+                  : "hover:bg-slate-700"
+              }`}
+            >
+              <Icon size={20} />
 
-      <div className="space-y-3">
-
-
-        {
-          menuItems.map((item,index)=>{
-
-            const Icon = item.icon;
-
-
-            return (
-
-              <div
-                key={index}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-700 cursor-pointer"
-              >
-
-                <Icon size={20}/>
-
-                <span>
-                  {item.name}
-                </span>
-
-              </div>
-
-            );
-
-          })
-        }
-
-
+              {item.name}
+            </button>
+          );
+        })}
       </div>
 
-
-
       <button
-
         onClick={logout}
-
-        className="flex items-center gap-3 mt-10 p-3 w-full rounded-lg hover:bg-red-600"
-
+        className="w-full flex items-center gap-3 mt-10 p-3 rounded-lg hover:bg-red-600"
       >
-
-        <LogOut size={20}/>
-
+        <LogOut size={20} />
         Logout
-
       </button>
-
-
     </div>
-
   );
-
 }
-
 
 export default Sidebar;

@@ -8,8 +8,6 @@ import {
 
 import API from "../api/axios";
 
-import Sidebar from "../components/Sidebar";
-import Navbar from "../components/Navbar";
 import StatCard from "../components/StatCard";
 import RevenueChart from "../components/RevenueChart";
 import RecentSales from "../components/RecentSales";
@@ -25,18 +23,14 @@ function Dashboard() {
 
   const fetchDashboard = async () => {
     try {
-      // ==========================
-      // Summary
-      // ==========================
+      // Dashboard Summary
       const summaryRes = await API.get("/dashboard/summary");
 
       if (summaryRes.data.success) {
         setSummary(summaryRes.data.data);
       }
 
-      // ==========================
       // Sales Chart
-      // ==========================
       const chartRes = await API.get("/dashboard/sales-chart");
 
       if (chartRes.data.success) {
@@ -48,9 +42,7 @@ function Dashboard() {
         setChartData(formattedChart);
       }
 
-      // ==========================
       // Recent Sales
-      // ==========================
       const salesRes = await API.get("/dashboard/recent-sales");
 
       if (salesRes.data.success) {
@@ -69,56 +61,48 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
+    <>
+      <h1 className="text-3xl font-bold mb-6">
+        Inventra ERP Dashboard
+      </h1>
 
-      <div className="flex-1">
-        <Navbar />
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Products"
+          value={summary.totalProducts || 0}
+          icon={Package}
+        />
 
-        <main className="p-6">
-          <h1 className="text-3xl font-bold mb-6">
-            Inventra ERP Dashboard
-          </h1>
+        <StatCard
+          title="Total Customers"
+          value={summary.totalCustomers || 0}
+          icon={Users}
+        />
 
-          {/* Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Total Products"
-              value={summary.totalProducts || 0}
-              icon={Package}
-            />
+        <StatCard
+          title="Total Sales"
+          value={`₹${summary.totalSales || 0}`}
+          icon={ShoppingCart}
+        />
 
-            <StatCard
-              title="Total Customers"
-              value={summary.totalCustomers || 0}
-              icon={Users}
-            />
-
-            <StatCard
-              title="Total Sales"
-              value={`₹${summary.totalSales || 0}`}
-              icon={ShoppingCart}
-            />
-
-            <StatCard
-              title="Profit"
-              value={`₹${summary.profit || 0}`}
-              icon={IndianRupee}
-            />
-          </div>
-
-          {/* Sales Chart */}
-          <div className="mt-8">
-            <RevenueChart data={chartData} />
-          </div>
-
-          {/* Recent Sales */}
-          <div className="mt-8">
-            <RecentSales sales={sales} />
-          </div>
-        </main>
+        <StatCard
+          title="Profit"
+          value={`₹${summary.profit || 0}`}
+          icon={IndianRupee}
+        />
       </div>
-    </div>
+
+      {/* Revenue Chart */}
+      <div className="mt-8">
+        <RevenueChart data={chartData} />
+      </div>
+
+      {/* Recent Sales */}
+      <div className="mt-8">
+        <RecentSales sales={sales} />
+      </div>
+    </>
   );
 }
 

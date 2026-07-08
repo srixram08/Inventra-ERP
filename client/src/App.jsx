@@ -2,41 +2,50 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
 
+import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-
   return (
-
     <BrowserRouter>
-
       <Routes>
+        {/* Login */}
+        <Route path="/" element={<Login />} />
 
-        {/* Login Page */}
+        {/* Protected ERP Routes */}
         <Route
-          path="/"
-          element={<Login />}
-        />
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
 
+          <Route
+            path="/products"
+            element={<Products />}
+          />
+        </Route>
 
-        {/* Dashboard Page */}
+        {/* Redirect unknown routes */}
         <Route
-          path="/dashboard"
-          element={<Dashboard />}
+          path="*"
+          element={<Navigate to="/" replace />}
         />
-
-
       </Routes>
-
     </BrowserRouter>
-
   );
-
 }
-
 
 export default App;
