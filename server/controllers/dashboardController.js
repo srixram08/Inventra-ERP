@@ -32,7 +32,7 @@ exports.getDashboardSummary = async (req, res) => {
     const sales = totalSales._sum.totalAmount || 0;
     const purchases = totalPurchases._sum.totalAmount || 0;
 
-    const profit = sales - purchases;
+   const profit = Math.max(sales - purchases, 0);
 
     res.status(200).json({
       success: true,
