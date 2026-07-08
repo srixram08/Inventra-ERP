@@ -5,43 +5,86 @@ const router = express.Router();
 const {
   getDashboardSummary,
   getRevenueAnalytics,
+  getSalesChart,
+  getPurchaseChart,
+  getInventoryStatus,
+  getLowStockProducts,
   getRecentSales,
+  getRecentPurchases,
 } = require("../controllers/dashboardController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 
-
 // ======================================
-// DASHBOARD SUMMARY
+// Dashboard Summary
 // ======================================
-// GET /api/dashboard/summary
 router.get(
   "/summary",
   authMiddleware,
   getDashboardSummary
 );
 
-
 // ======================================
-// REVENUE ANALYTICS
+// Revenue Analytics
 // ======================================
-// GET /api/dashboard/revenue
 router.get(
   "/revenue",
   authMiddleware,
   getRevenueAnalytics
 );
 
+// ======================================
+// Sales Chart
+// ======================================
+router.get(
+  "/sales-chart",
+  authMiddleware,
+  getSalesChart
+);
 
 // ======================================
-// RECENT SALES
+// Purchase Chart
 // ======================================
-// GET /api/dashboard/recent-sales
+router.get(
+  "/purchase-chart",
+  authMiddleware,
+  getPurchaseChart
+);
+
+// ======================================
+// Inventory Status
+// ======================================
+router.get(
+  "/inventory-status",
+  authMiddleware,
+  getInventoryStatus
+);
+
+// ======================================
+// Low Stock Products
+// ======================================
+router.get(
+  "/low-stock",
+  authMiddleware,
+  getLowStockProducts
+);
+
+// ======================================
+// Recent Sales
+// ======================================
 router.get(
   "/recent-sales",
   authMiddleware,
   getRecentSales
 );
 
+// ======================================
+// Recent Purchases
+// ======================================
+router.get(
+  "/recent-purchases",
+  authMiddleware,
+  getRecentPurchases
+);
 
 module.exports = router;
