@@ -1,18 +1,115 @@
-import axios from "./axios";
+import API from "./axios";
 
-export const getProducts = () => axios.get("/products");
 
-export const createProduct = (data) =>
-  axios.post("/products", data);
+// ======================================
+// GET ALL PRODUCTS
+// ======================================
 
-export const updateProduct = (id, data) =>
-  axios.put(`/products/${id}`, data);
+export const getProducts = async () => {
+  try {
+    const response = await API.get("/products");
 
-export const deleteProduct = (id) =>
-  axios.delete(`/products/${id}`);
+    return response.data;
 
-export const getCategories = () =>
-  axios.get("/categories");
+  } catch (error) {
 
-export const getSuppliers = () =>
-  axios.get("/suppliers");
+    console.error(
+      "Get Products Error:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
+
+
+
+// ======================================
+// CREATE PRODUCT
+// ======================================
+
+export const createProduct = async (productData) => {
+
+  try {
+
+    const response = await API.post(
+      "/products",
+      productData
+    );
+
+    return response.data;
+
+
+  } catch (error) {
+
+    console.error(
+      "Create Product Error:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+
+};
+
+
+
+// ======================================
+// UPDATE PRODUCT
+// ======================================
+
+export const updateProduct = async (
+  id,
+  productData
+) => {
+
+  try {
+
+    const response = await API.put(
+      `/products/${id}`,
+      productData
+    );
+
+    return response.data;
+
+
+  } catch (error) {
+
+    console.error(
+      "Update Product Error:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+
+};
+
+
+
+// ======================================
+// DELETE PRODUCT
+// ======================================
+
+export const deleteProduct = async (id) => {
+
+  try {
+
+    const response = await API.delete(
+      `/products/${id}`
+    );
+
+    return response.data;
+
+
+  } catch (error) {
+
+    console.error(
+      "Delete Product Error:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+
+};
