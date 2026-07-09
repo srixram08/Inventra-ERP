@@ -9,14 +9,14 @@ import {
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
-
 import Customers from "./pages/Customers";
-import AddCustomer from "./pages/AddCustomer";
-import EditCustomer from "./pages/EditCustomer";
+
+import Supplier from "./pages/Supplier";
 
 
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+
 
 
 function App() {
@@ -37,7 +37,7 @@ function App() {
 
 
 
-        {/* Protected ERP Routes */}
+        {/* Protected Routes */}
 
         <Route
 
@@ -54,73 +54,35 @@ function App() {
         >
 
 
-
-          {/* Dashboard */}
-
           <Route
-
             path="/dashboard"
-
             element={<Dashboard />}
-
           />
 
 
-
-          {/* Products */}
-
           <Route
-
             path="/products"
-
             element={<Products />}
-
           />
 
 
-
-          {/* Customers */}
-
           <Route
-
             path="/customers"
-
             element={<Customers />}
-
           />
 
-
-
-          {/* Add Customer */}
 
           <Route
-
-            path="/customers/add"
-
-            element={<AddCustomer />}
-
+            path="/suppliers"
+            element={<Supplier />}
           />
-
-
-
-          {/* Edit Customer */}
-
-          <Route
-
-            path="/customers/edit/:id"
-
-            element={<EditCustomer />}
-
-          />
-
 
 
         </Route>
 
 
 
-
-        {/* Unknown Routes */}
+        {/* fallback */}
 
         <Route
 
@@ -128,7 +90,7 @@ function App() {
 
           element={
             <Navigate
-              to="/"
+              to="/dashboard"
               replace
             />
           }
