@@ -1,153 +1,264 @@
 const prisma = require("../config/prisma");
 
-// ==============================
-// CREATE CUSTOMER
-// ==============================
 
-const createCustomer = async (req, res) => {
+// ======================================
+// CREATE CUSTOMER
+// POST /api/customers
+// ======================================
+
+exports.createCustomer = async (req, res) => {
   try {
+
     const {
       name,
       email,
       phone,
       address,
-      city,
-      state,
-      country,
-      pincode,
     } = req.body;
 
+
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: "Customer name is required",
+      });
+    }
+
+
     const customer = await prisma.customer.create({
+
       data: {
         name,
         email,
         phone,
         address,
-        city,
-        state,
-        country,
-        pincode,
       },
+
     });
+
 
     res.status(201).json({
+
       success: true,
-      message: "Customer Created Successfully",
-      customer,
+      message: "Customer created successfully",
+      data: customer,
+
     });
+
+
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
+
       success: false,
       message: error.message,
+
     });
+
   }
 };
 
-// ==============================
-// GET ALL CUSTOMERS
-// ==============================
 
-const getCustomers = async (req, res) => {
+
+// ======================================
+// GET ALL CUSTOMERS
+// GET /api/customers
+// ======================================
+
+exports.getCustomers = async (req, res) => {
   try {
-    const customers = await prisma.customer.findMany();
+
+    const customers = await prisma.customer.findMany({
+
+      orderBy: {
+        id: "desc",
+      },
+
+    });
+
 
     res.status(200).json({
+
       success: true,
-      customers,
+      data: customers,
+
     });
+
+
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
+
       success: false,
-      message: error.message,
+      message: "Failed to fetch customers",
+
     });
+
   }
 };
 
-// ==============================
-// GET CUSTOMER BY ID
-// ==============================
 
-const getCustomerById = async (req, res) => {
+
+// ======================================
+// GET CUSTOMER BY ID
+// GET /api/customers/:id
+// ======================================
+
+exports.getCustomerById = async (req, res) => {
+
   try {
+
+    const id = Number(req.params.id);
+
+
     const customer = await prisma.customer.findUnique({
+
       where: {
-        id: Number(req.params.id),
+        id,
       },
+
     });
+
 
     if (!customer) {
+
       return res.status(404).json({
+
         success: false,
         message: "Customer not found",
+
       });
+
     }
 
+
     res.status(200).json({
+
       success: true,
-      customer,
+      data: customer,
+
     });
+
+
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
+
       success: false,
-      message: error.message,
+      message: "Failed to fetch customer",
+
     });
+
   }
+
 };
 
-// ==============================
+
+
+// ======================================
 // UPDATE CUSTOMER
-// ==============================
+// PUT /api/customers/:id
+// ======================================
 
-const updateCustomer = async (req, res) => {
+exports.updateCustomer = async (req, res) => {
+
   try {
+
+    const id = Number(req.params.id);
+
+
     const customer = await prisma.customer.update({
+
       where: {
-        id: Number(req.params.id),
+        id,
       },
-      data: req.body,
+
+
+      data: {
+
+        name: req.body.name,
+        email: req.body.email,
+        phone: req.body.phone,
+        address: req.body.address,
+
+      },
+
     });
+
 
     res.status(200).json({
+
       success: true,
-      message: "Customer Updated Successfully",
-      customer,
+      message: "Customer updated successfully",
+      data: customer,
+
     });
+
+
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json({
+
       success: false,
-      message: error.message,
+      message: "Failed to update customer",
+
     });
+
   }
+
 };
 
-// ==============================
+
+
+// ======================================
 // DELETE CUSTOMER
-// ==============================
+// DELETE /api/customers/:id
+// ======================================
 
-const deleteCustomer = async (req, res) => {
+exports.deleteCustomer = async (req, res) => {
+
   try {
+
+    const id = Number(req.params.id);
+
+
     await prisma.customer.delete({
+
       where: {
-        id: Number(req.params.id),
+        id,
       },
+
     });
+
 
     res.status(200).json({
-      success: true,
-      message: "Customer Deleted Successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 
-module.exports = {
-  createCustomer,
-  getCustomers,
-  getCustomerById,
-  updateCustomer,
-  deleteCustomer,
+      success: true,
+      message: "Customer deleted successfully",
+
+    });
+
+
+  } catch (error) {
+
+    console.error(error);
+
+
+    res.status(500).json({
+
+      success: false,
+      message: "Failed to delete customer",
+
+    });
+
+  }
+
 };
