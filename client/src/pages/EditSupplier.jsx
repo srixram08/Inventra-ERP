@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+
+
 import {
   getSupplierById,
   updateSupplier,
 } from "../api/supplierApi";
 
 
-const EditSupplier = () => {
-
-
-  const { id } = useParams();
+function EditSupplier() {
 
   const navigate = useNavigate();
+
+  const { id } = useParams();
 
 
   const [formData, setFormData] = useState({
@@ -27,35 +28,58 @@ const EditSupplier = () => {
 
   const [loading, setLoading] = useState(true);
 
+  const [saving, setSaving] = useState(false);
 
 
 
-  useEffect(() => {
-
-    fetchSupplier();
-
-  }, []);
-
-
-
-
+  // Get supplier details
 
   const fetchSupplier = async () => {
 
     try {
 
 
-      const res = await getSupplierById(id);
+      setLoading(true);
 
 
-      setFormData(res.data);
+      const response =
+        await getSupplierById(id);
+
+
+
+      console.log(
+        "SUPPLIER DETAILS:",
+        response.data
+      );
+
+
+
+      const supplier =
+        response.data.supplier;
+
+
+
+      setFormData({
+
+        name: supplier.name || "",
+
+        email: supplier.email || "",
+
+        phone: supplier.phone || "",
+
+        address: supplier.address || "",
+
+      });
 
 
 
     } catch(error) {
 
 
-      console.error(error);
+      console.error(
+        "Fetch Supplier Error:",
+        error
+      );
 
 
       alert(
@@ -77,7 +101,17 @@ const EditSupplier = () => {
 
 
 
-  const handleChange = (e) => {
+  useEffect(()=>{
+
+    fetchSupplier();
+
+  },[id]);
+
+
+
+
+
+  const handleChange = (e)=>{
 
 
     setFormData({
@@ -95,13 +129,17 @@ const EditSupplier = () => {
 
 
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async(e)=>{
 
 
     e.preventDefault();
 
 
-    try {
+    try{
+
+
+      setSaving(true);
+
 
 
       await updateSupplier(
@@ -110,8 +148,9 @@ const EditSupplier = () => {
       );
 
 
+
       alert(
-        "Supplier updated successfully"
+        "Supplier Updated Successfully"
       );
 
 
@@ -119,15 +158,24 @@ const EditSupplier = () => {
 
 
 
-    } catch(error) {
+    }catch(error){
 
 
-      console.error(error);
+      console.error(
+        "Update Error:",
+        error
+      );
 
 
       alert(
         "Update failed"
       );
+
+
+    }finally{
+
+
+      setSaving(false);
 
 
     }
@@ -139,7 +187,9 @@ const EditSupplier = () => {
 
 
 
-  if (loading) {
+
+
+  if(loading){
 
     return (
 
@@ -152,6 +202,8 @@ const EditSupplier = () => {
     );
 
   }
+
+
 
 
 
@@ -170,153 +222,149 @@ const EditSupplier = () => {
 
 
 
+      <div className="
+      bg-white
+      p-6
+      rounded-xl
+      shadow
+      max-width-xl
+      ">
 
 
-      <form
-
-        onSubmit={handleSubmit}
-
-        className="
-        bg-white
-        shadow
-        rounded-xl
-        p-6
-        max-w-xl
-        space-y-4
-        "
-
-      >
+        <form onSubmit={handleSubmit}>
 
 
+          <input
 
-        <input
+            className="
+            w-full
+            border
+            p-2
+            rounded
+            mb-4
+            "
 
-          type="text"
+            name="name"
 
-          name="name"
+            value={formData.name}
 
-          value={formData.name || ""}
+            onChange={handleChange}
 
-          onChange={handleChange}
+            placeholder="Supplier Name"
 
-          placeholder="Supplier Name"
+            required
 
-          className="
-          w-full
-          border
-          rounded
-          p-3
-          "
-
-        />
+          />
 
 
 
+          <input
 
+            className="
+            w-full
+            border
+            p-2
+            rounded
+            mb-4
+            "
 
-        <input
+            name="email"
 
-          type="email"
+            value={formData.email}
 
-          name="email"
+            onChange={handleChange}
 
-          value={formData.email || ""}
+            placeholder="Email"
 
-          onChange={handleChange}
-
-          placeholder="Email"
-
-          className="
-          w-full
-          border
-          rounded
-          p-3
-          "
-
-        />
+          />
 
 
 
+          <input
 
+            className="
+            w-full
+            border
+            p-2
+            rounded
+            mb-4
+            "
 
-        <input
+            name="phone"
 
-          type="text"
+            value={formData.phone}
 
-          name="phone"
+            onChange={handleChange}
 
-          value={formData.phone || ""}
+            placeholder="Phone"
 
-          onChange={handleChange}
-
-          placeholder="Phone"
-
-          className="
-          w-full
-          border
-          rounded
-          p-3
-          "
-
-        />
+          />
 
 
 
+          <textarea
 
+            className="
+            w-full
+            border
+            p-2
+            rounded
+            mb-4
+            "
 
-        <textarea
+            name="address"
 
-          name="address"
+            value={formData.address}
 
-          value={formData.address || ""}
+            onChange={handleChange}
 
-          onChange={handleChange}
+            placeholder="Address"
 
-          placeholder="Address"
-
-          className="
-          w-full
-          border
-          rounded
-          p-3
-          "
-
-        />
+          />
 
 
 
 
+          <button
 
-        <button
+            type="submit"
 
-          type="submit"
+            disabled={saving}
 
-          className="
-          bg-blue-600
-          text-white
-          px-5
-          py-2
-          rounded-lg
-          hover:bg-blue-700
-          "
+            className="
+            bg-green-600
+            text-white
+            px-5
+            py-2
+            rounded-lg
+            "
 
-        >
+          >
 
-          Update Supplier
+            {
+              saving
+              ?
+              "Updating..."
+              :
+              "Update Supplier"
+            }
 
-        </button>
+
+          </button>
 
 
 
-      </form>
+        </form>
+
+
+      </div>
 
 
     </div>
 
   );
 
-};
-
+}
 
 
 export default EditSupplier;

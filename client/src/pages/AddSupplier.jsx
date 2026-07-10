@@ -1,13 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import {
-  createSupplier,
-} from "../api/supplierApi";
+import { createSupplier } from "../api/supplierApi";
 
 
-const AddSupplier = () => {
-
+function AddSupplier() {
 
   const navigate = useNavigate();
 
@@ -23,7 +20,13 @@ const AddSupplier = () => {
 
 
 
-  const handleChange = (e) => {
+  const [loading, setLoading] = useState(false);
+
+
+
+
+
+  const handleChange = (e)=>{
 
     setFormData({
 
@@ -38,19 +41,26 @@ const AddSupplier = () => {
 
 
 
-  const handleSubmit = async (e) => {
+
+
+
+  const handleSubmit = async(e)=>{
 
     e.preventDefault();
 
 
-    try {
+    try{
+
+
+      setLoading(true);
 
 
       await createSupplier(formData);
 
 
+
       alert(
-        "Supplier added successfully"
+        "Supplier Added Successfully"
       );
 
 
@@ -58,10 +68,13 @@ const AddSupplier = () => {
 
 
 
-    } catch(error) {
+    }catch(error){
 
 
-      console.error(error);
+      console.error(
+        "Add Supplier Error:",
+        error
+      );
 
 
       alert(
@@ -69,9 +82,19 @@ const AddSupplier = () => {
       );
 
 
+    }finally{
+
+
+      setLoading(false);
+
+
     }
 
+
   };
+
+
+
 
 
 
@@ -90,149 +113,220 @@ const AddSupplier = () => {
 
 
 
-      <form
 
-        onSubmit={handleSubmit}
-
-        className="
-        bg-white
-        shadow
-        rounded-xl
-        p-6
-        max-w-xl
-        space-y-4
-        "
-
-      >
+      <div className="
+      bg-white
+      rounded-xl
+      shadow
+      p-6
+      max-w-xl
+      ">
 
 
 
-        <input
-
-          type="text"
-
-          name="name"
-
-          placeholder="Supplier Name"
-
-          value={formData.name}
-
-          onChange={handleChange}
-
-          className="
-          w-full
-          border
-          rounded
-          p-3
-          "
-
-        />
+        <form onSubmit={handleSubmit}>
 
 
 
-
-        <input
-
-          type="email"
-
-          name="email"
-
-          placeholder="Email"
-
-          value={formData.email}
-
-          onChange={handleChange}
-
-          className="
-          w-full
-          border
-          rounded
-          p-3
-          "
-
-        />
+          <div className="mb-4">
 
 
+            <label className="block mb-2 font-medium">
+
+              Name
+
+            </label>
 
 
-        <input
+            <input
 
-          type="text"
+              type="text"
 
-          name="phone"
+              name="name"
 
-          placeholder="Phone"
+              value={formData.name}
 
-          value={formData.phone}
+              onChange={handleChange}
 
-          onChange={handleChange}
+              required
 
-          className="
-          w-full
-          border
-          rounded
-          p-3
-          "
+              className="
+              w-full
+              border
+              rounded-lg
+              px-3
+              py-2
+              "
 
-        />
+            />
+
+
+          </div>
 
 
 
 
 
-        <textarea
-
-          name="address"
-
-          placeholder="Address"
-
-          value={formData.address}
-
-          onChange={handleChange}
-
-          className="
-          w-full
-          border
-          rounded
-          p-3
-          "
-
-        />
 
 
+          <div className="mb-4">
 
 
+            <label className="block mb-2 font-medium">
 
-        <button
+              Email
 
-          type="submit"
+            </label>
 
-          className="
-          bg-blue-600
-          text-white
-          px-5
-          py-2
-          rounded-lg
-          hover:bg-blue-700
-          "
 
-        >
+            <input
 
-          Save Supplier
+              type="email"
 
-        </button>
+              name="email"
+
+              value={formData.email}
+
+              onChange={handleChange}
+
+              className="
+              w-full
+              border
+              rounded-lg
+              px-3
+              py-2
+              "
+
+            />
+
+
+          </div>
 
 
 
-      </form>
+
+
+
+
+          <div className="mb-4">
+
+
+            <label className="block mb-2 font-medium">
+
+              Phone
+
+            </label>
+
+
+            <input
+
+              type="text"
+
+              name="phone"
+
+              value={formData.phone}
+
+              onChange={handleChange}
+
+              className="
+              w-full
+              border
+              rounded-lg
+              px-3
+              py-2
+              "
+
+            />
+
+
+          </div>
+
+
+
+
+
+
+
+          <div className="mb-4">
+
+
+            <label className="block mb-2 font-medium">
+
+              Address
+
+            </label>
+
+
+            <textarea
+
+              name="address"
+
+              value={formData.address}
+
+              onChange={handleChange}
+
+              className="
+              w-full
+              border
+              rounded-lg
+              px-3
+              py-2
+              "
+
+            />
+
+          </div>
+
+
+
+
+
+
+
+          <button
+
+            type="submit"
+
+            disabled={loading}
+
+            className="
+            bg-blue-600
+            text-white
+            px-5
+            py-2
+            rounded-lg
+            hover:bg-blue-700
+            "
+
+          >
+
+            {
+              loading
+              ?
+              "Saving..."
+              :
+              "Add Supplier"
+            }
+
+
+          </button>
+
+
+
+
+        </form>
+
+
+
+      </div>
+
 
 
     </div>
 
   );
 
-};
-
+}
 
 
 export default AddSupplier;
