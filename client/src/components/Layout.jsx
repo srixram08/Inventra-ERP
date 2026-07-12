@@ -6,7 +6,7 @@ import Navbar from "./Navbar";
 
 function Layout() {
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-slate-50">
 
       {/* Sidebar */}
       <Sidebar />
@@ -18,7 +18,7 @@ function Layout() {
         <Navbar />
 
 
-        <main className="p-6">
+        <main className="p-8 animate-fade-in max-w-[1600px] mx-auto w-full">
           <Outlet />
         </main>
 
