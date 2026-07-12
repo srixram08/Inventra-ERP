@@ -9,6 +9,8 @@ import {
 
 function Supplier() {
   const navigate = useNavigate();
+  const role = localStorage.getItem("role") || "EMPLOYEE";
+  const isAdmin = role === "ADMIN" || role === "MANAGER";
 
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,13 +51,15 @@ function Supplier() {
           Suppliers ({suppliers.length})
         </h1>
 
-        <button
-          onClick={() => navigate("/suppliers/add")}
-          className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Add Supplier
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => navigate("/suppliers/add")}
+            className="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2"
+          >
+            <Plus size={18} />
+            Add Supplier
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -70,7 +74,7 @@ function Supplier() {
                 <th className="p-3 text-left">Company</th>
                 <th className="p-3 text-left">Phone</th>
                 <th className="p-3 text-left">Email</th>
-                <th className="p-3 text-left">Actions</th>
+                {isAdmin && <th className="p-3 text-left">Actions</th>}
               </tr>
             </thead>
 
@@ -96,23 +100,23 @@ function Supplier() {
                       {supplier.email || "-"}
                     </td>
 
-                    <td className="p-3 flex gap-3">
-                      <button
-                        className="text-blue-600"
-                        onClick={() =>
-                          navigate(`/suppliers/edit/${supplier.id}`)
-                        }
-                      >
-                        <Pencil size={18} />
-                      </button>
+                    {isAdmin && (
+                      <td className="p-3 flex gap-3">
+                        <button
+                          className="text-blue-600"
+                          onClick={() => navigate(`/suppliers/edit/${supplier.id}`)}
+                        >
+                          <Pencil size={18} />
+                        </button>
 
-                      <button
-                        className="text-red-600"
-                        onClick={() => handleDelete(supplier.id)}
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
+                        <button
+                          className="text-red-600"
+                          onClick={() => handleDelete(supplier.id)}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

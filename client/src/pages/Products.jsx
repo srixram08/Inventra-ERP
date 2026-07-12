@@ -12,6 +12,9 @@ import {
 import API from "../api/axios";
 
 const Products = () => {
+  const role = localStorage.getItem("role") || "EMPLOYEE";
+  const isAdmin = role === "ADMIN" || role === "MANAGER";
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
@@ -124,12 +127,14 @@ const Products = () => {
           Product Management
         </h1>
 
-        <button
-          onClick={handleAdd}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg"
-        >
-          + Add Product
-        </button>
+        {isAdmin && (
+          <button
+            onClick={handleAdd}
+            className="bg-blue-600 text-white px-5 py-2 rounded-lg"
+          >
+            + Add Product
+          </button>
+        )}
       </div>
 
       <input
@@ -147,6 +152,7 @@ const Products = () => {
           products={filteredProducts}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          isAdmin={isAdmin}
         />
       )}
 

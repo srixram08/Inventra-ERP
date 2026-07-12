@@ -9,6 +9,8 @@ import {
 
 const Customers = () => {
   const navigate = useNavigate();
+  const role = localStorage.getItem("role") || "EMPLOYEE";
+  const isAdmin = role === "ADMIN" || role === "MANAGER";
 
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
@@ -80,14 +82,15 @@ const Customers = () => {
           Customers
         </h1>
 
-        <button
-          onClick={() => navigate("/customers/add")}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
-        >
-          <Plus size={18} />
-          Add Customer
-        </button>
-
+        {isAdmin && (
+          <button
+            onClick={() => navigate("/customers/add")}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          >
+            <Plus size={18} />
+            Add Customer
+          </button>
+        )}
       </div>
 
       <div className="relative mb-5">
@@ -119,7 +122,7 @@ const Customers = () => {
               <th className="p-3 text-left">Email</th>
               <th className="p-3 text-left">Phone</th>
               <th className="p-3 text-left">Address</th>
-              <th className="p-3 text-center">Actions</th>
+              {isAdmin && <th className="p-3 text-center">Actions</th>}
 
             </tr>
 
@@ -158,34 +161,25 @@ const Customers = () => {
                     {customer.address}
                   </td>
 
-                  <td className="p-3">
+                  {isAdmin && (
+                    <td className="p-3">
+                      <div className="flex justify-center gap-3">
+                        <button
+                          onClick={() => navigate(`/customers/edit/${customer.id}`)}
+                          className="text-blue-600"
+                        >
+                          <Pencil size={18} />
+                        </button>
 
-                    <div className="flex justify-center gap-3">
-
-                      <button
-                        onClick={() =>
-                          navigate(
-                            `/customers/edit/${customer.id}`
-                          )
-                        }
-                        className="text-blue-600"
-                      >
-                        <Pencil size={18} />
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          handleDelete(customer.id)
-                        }
-                        className="text-red-600"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-
-                    </div>
-
-                  </td>
-
+                        <button
+                          onClick={() => handleDelete(customer.id)}
+                          className="text-red-600"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}

@@ -113,13 +113,23 @@ function Navbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-3.5 pl-4 border-l border-slate-200">
-          <div className="flex flex-col text-right">
-            <span className="text-sm font-semibold text-slate-800">Super Administrator</span>
-            <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Active session</span>
-          </div>
-          <div className="p-0.5 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-full">
-            <UserCircle size={32} className="text-white bg-slate-900 rounded-full" />
+        <div className="relative">
+          <div 
+            className="flex items-center gap-3.5 pl-4 border-l border-slate-200 cursor-pointer"
+            onClick={() => {
+              // Simple quick logout for demo
+              localStorage.clear();
+              window.location.href = "/login";
+            }}
+            title="Click to logout"
+          >
+            <div className="flex flex-col text-right">
+              <span className="text-sm font-semibold text-slate-800">{localStorage.getItem("userName") || "Super Administrator"}</span>
+              <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">{localStorage.getItem("role") || "ADMIN"}</span>
+            </div>
+            <div className="p-0.5 bg-gradient-to-tr from-blue-500 to-indigo-500 rounded-full">
+              <UserCircle size={32} className="text-white bg-slate-900 rounded-full" />
+            </div>
           </div>
         </div>
       </div>

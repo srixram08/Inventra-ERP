@@ -1,10 +1,10 @@
 import StockBadge from "./StockBadge";
 
 
-const ProductTable = ({
   products,
   onEdit,
-  onDelete
+  onDelete,
+  isAdmin
 }) => {
 
 
@@ -56,11 +56,11 @@ const ProductTable = ({
             </th>
 
 
-            <th className="p-4">
-              Actions
-            </th>
-
-
+            {isAdmin && (
+              <th className="p-4">
+                Actions
+              </th>
+            )}
           </tr>
 
 
@@ -167,64 +167,24 @@ const ProductTable = ({
 
 
 
-                  <td className="p-4">
-
-
-                    <div className="flex gap-2">
-
-
-                      <button
-
-                        onClick={() =>
-                          onEdit(product)
-                        }
-
-                        className="
-                        px-3
-                        py-1
-                        rounded
-                        bg-blue-500
-                        text-white
-                        text-sm
-                        "
-
-                      >
-
-                        Edit
-
-                      </button>
-
-
-
-                      <button
-
-                        onClick={() =>
-                          onDelete(product.id)
-                        }
-
-                        className="
-                        px-3
-                        py-1
-                        rounded
-                        bg-red-500
-                        text-white
-                        text-sm
-                        "
-
-                      >
-
-                        Delete
-
-                      </button>
-
-
-                    </div>
-
-
-                  </td>
-
-
-
+                  {isAdmin && (
+                    <td className="p-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onEdit(product)}
+                          className="px-3 py-1 rounded bg-blue-500 text-white text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => onDelete(product.id)}
+                          className="px-3 py-1 rounded bg-red-500 text-white text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
 
 

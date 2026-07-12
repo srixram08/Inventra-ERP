@@ -9,6 +9,8 @@ import {
 
 function Purchase() {
   const navigate = useNavigate();
+  const role = localStorage.getItem("role") || "EMPLOYEE";
+  const isAdmin = role === "ADMIN" || role === "MANAGER";
 
   const [purchases, setPurchases] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,13 +64,15 @@ function Purchase() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Purchases</h1>
-        <button
-          onClick={() => navigate("/purchases/add")}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 transition"
-        >
-          <Plus size={18} />
-          Add Purchase
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => navigate("/purchases/add")}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 transition"
+          >
+            <Plus size={18} />
+            Add Purchase
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -99,7 +103,7 @@ function Purchase() {
                 <th className="p-4 text-left text-sm font-semibold text-gray-600">Items</th>
                 <th className="p-4 text-left text-sm font-semibold text-gray-600">Total</th>
                 <th className="p-4 text-left text-sm font-semibold text-gray-600">Date</th>
-                <th className="p-4 text-center text-sm font-semibold text-gray-600">Actions</th>
+                {isAdmin && <th className="p-4 text-center text-sm font-semibold text-gray-600">Actions</th>}
               </tr>
             </thead>
 
@@ -129,18 +133,19 @@ function Purchase() {
                     {new Date(purchase.purchaseDate || purchase.createdAt).toLocaleDateString("en-IN")}
                   </td>
 
-                  <td className="p-4">
-                    <div className="flex justify-center gap-3">
-                      <button
-                        onClick={() => handleDelete(purchase.id)}
-                        className="text-red-500 hover:text-red-700 transition"
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-
+                  {isAdmin && (
+                    <td className="p-4">
+                      <div className="flex justify-center gap-3">
+                        <button
+                          onClick={() => handleDelete(purchase.id)}
+                          className="text-red-500 hover:text-red-700 transition"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

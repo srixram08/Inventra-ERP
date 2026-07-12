@@ -38,6 +38,8 @@ function Login() {
       const response = await API.post("/auth/login", formData);
       if (response.data.success) {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("role", response.data.user.role);
+        localStorage.setItem("userName", response.data.user.name);
         navigate("/dashboard", { replace: true });
       } else {
         setError(response.data.message || "Login Failed");

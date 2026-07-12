@@ -6,6 +6,8 @@ import { getSales, deleteSale } from "../api/saleApi";
 
 function Sales() {
   const navigate = useNavigate();
+  const role = localStorage.getItem("role") || "EMPLOYEE";
+  const isAdmin = role === "ADMIN" || role === "MANAGER";
 
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,13 +77,15 @@ function Sales() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Sales</h1>
-        <button
-          onClick={() => navigate("/sales/add")}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 transition"
-        >
-          <Plus size={18} />
-          New Sale
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => navigate("/sales/add")}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 transition"
+          >
+            <Plus size={18} />
+            New Sale
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -157,13 +161,15 @@ function Sales() {
                         <Eye size={18} />
                       </button>
 
-                      <button
-                        onClick={() => handleDelete(sale.id)}
-                        className="text-red-500 hover:text-red-700 transition"
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDelete(sale.id)}
+                          className="text-red-500 hover:text-red-700 transition"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
                   </td>
 
