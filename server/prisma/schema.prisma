@@ -26,10 +26,10 @@ model Category {
 model Supplier {
   id          Int        @id @default(autoincrement())
   name        String
-  companyName String?
   email       String?
   phone       String?
   address     String?
+  companyName String?
   products    Product[]
   purchases   Purchase[]
 }
@@ -42,15 +42,15 @@ model Product {
   categoryId            Int
   stock                 Int                    @default(0)
   supplierId            Int
+  inventoryTransactions InventoryTransaction[]
   category              Category               @relation(fields: [categoryId], references: [id])
   supplier              Supplier               @relation(fields: [supplierId], references: [id])
   purchaseItems         PurchaseItem[]
   saleItems             SaleItem[]
-  inventoryTransactions InventoryTransaction[]
 }
 
 model Customer {
-  id      Int      @id @default(autoincrement())
+  id      Int     @id @default(autoincrement())
   name    String
   email   String?
   phone   String?
@@ -87,8 +87,8 @@ model Sale {
   invoiceNumber String     @unique
   customerId    Int
   totalAmount   Float
-  status        String     @default("COMPLETED")
   createdAt     DateTime   @default(now())
+  status        String     @default("COMPLETED")
   customer      Customer   @relation(fields: [customerId], references: [id])
   items         SaleItem[]
 }
@@ -98,16 +98,10 @@ model SaleItem {
   saleId     Int
   productId  Int
   quantity   Int
-  unitPrice  Float
   totalPrice Float
+  unitPrice  Float
   product    Product @relation(fields: [productId], references: [id])
   sale       Sale    @relation(fields: [saleId], references: [id])
-}
-
-enum TransactionType {
-  STOCK_IN
-  STOCK_OUT
-  ADJUSTMENT
 }
 
 model InventoryTransaction {
@@ -118,4 +112,10 @@ model InventoryTransaction {
   remarks   String?
   createdAt DateTime        @default(now())
   product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+enum TransactionType {
+  STOCK_IN
+  STOCK_OUT
+  ADJUSTMENT
 }
