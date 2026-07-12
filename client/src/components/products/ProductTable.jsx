@@ -1,6 +1,6 @@
 import StockBadge from "./StockBadge";
 
-
+const ProductTable = ({
   products,
   onEdit,
   onDelete,
