@@ -17,12 +17,11 @@ function EditSupplier() {
 
 
   const [formData, setFormData] = useState({
-
     name: "",
+    companyName: "",
     email: "",
     phone: "",
     address: "",
-
   });
 
 
@@ -42,33 +41,22 @@ function EditSupplier() {
       setLoading(true);
 
 
-      const response =
-        await getSupplierById(id);
+      const response = await getSupplierById(id);
 
+      console.log("SUPPLIER DETAILS:", response);
 
+      const supplier = response.data;
 
-      console.log(
-        "SUPPLIER DETAILS:",
-        response.data
-      );
-
-
-
-      const supplier =
-        response.data.supplier;
-
-
+      if (!supplier) {
+        throw new Error("Supplier not found");
+      }
 
       setFormData({
-
         name: supplier.name || "",
-
+        companyName: supplier.companyName || "",
         email: supplier.email || "",
-
         phone: supplier.phone || "",
-
         address: supplier.address || "",
-
       });
 
 
@@ -253,6 +241,28 @@ function EditSupplier() {
             placeholder="Supplier Name"
 
             required
+
+          />
+
+
+
+          <input
+
+            className="
+            w-full
+            border
+            p-2
+            rounded
+            mb-4
+            "
+
+            name="companyName"
+
+            value={formData.companyName}
+
+            onChange={handleChange}
+
+            placeholder="Company Name"
 
           />
 

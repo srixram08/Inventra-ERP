@@ -1,89 +1,77 @@
 import API from "./axios";
 
 
-// =================================
 // GET ALL SUPPLIERS
-// =================================
 
 export const getSuppliers = async () => {
 
-  const response = await API.get(
-    "/suppliers"
-  );
+    const response = await API.get("/suppliers");
 
-  return response;
+    console.log(
+        "SUPPLIER API RESPONSE:",
+        response.data
+    );
+
+    return response.data;
 
 };
 
 
 
-
-// =================================
 // GET SINGLE SUPPLIER
-// =================================
 
 export const getSupplierById = async (id) => {
 
-  const response = await API.get(
-    `/suppliers/${id}`
-  );
+    const response =
+        await API.get(`/suppliers/${id}`);
 
-  return response;
+    return response.data;
 
 };
 
 
 
-
-// =================================
 // CREATE SUPPLIER
-// =================================
 
-export const createSupplier = async (data) => {
+export const createSupplier = async(data)=>{
 
-  const response = await API.post(
-    "/suppliers",
-    data
-  );
+    const response =
+        await API.post(
+            "/suppliers",
+            data
+        );
 
-  return response;
+    return response.data;
 
 };
 
 
 
-
-// =================================
 // UPDATE SUPPLIER
-// =================================
 
-export const updateSupplier = async (
-  id,
-  data
-) => {
+export const updateSupplier = async(id,data)=>{
 
-  const response = await API.put(
-    `/suppliers/${id}`,
-    data
-  );
+    const response =
+        await API.put(
+            `/suppliers/${id}`,
+            data
+        );
 
-  return response;
+    return response.data;
 
 };
 
 
 
-
-// =================================
 // DELETE SUPPLIER
-// =================================
 
-export const deleteSupplier = async (id) => {
+export const deleteSupplier = async(id)=>{
 
-  const response = await API.delete(
-    `/suppliers/${id}`
-  );
+    const response =
+        await API.delete(
+            `/suppliers/${id}`
+        );
 
-  return response;
+    return response.data;
 
 };

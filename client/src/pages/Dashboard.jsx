@@ -50,7 +50,7 @@ function Dashboard() {
           invoiceNumber: sale.invoiceNumber,
           customerName: sale.customer?.name || "Unknown",
           amount: Number(sale.totalAmount),
-          date: new Date(sale.saleDate).toLocaleDateString(),
+          date: new Date(sale.createdAt || sale.saleDate).toLocaleDateString(),
         }));
 
         setSales(formattedSales);

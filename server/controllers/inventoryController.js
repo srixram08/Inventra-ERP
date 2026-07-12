@@ -209,7 +209,7 @@ exports.getHistory = async (req, res) => {
     res.status(200).json({
       success: true,
       count: history.length,
-      history,
+      data: history,
     });
   } catch (error) {
     console.error(error);
@@ -241,7 +241,7 @@ exports.lowStock = async (req, res) => {
     res.status(200).json({
       success: true,
       count: products.length,
-      products,
+      data: products,
     });
   } catch (error) {
     console.error(error);

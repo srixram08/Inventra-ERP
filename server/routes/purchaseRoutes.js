@@ -2,74 +2,29 @@ const express = require("express");
 
 const router = express.Router();
 
+const authMiddleware = require("../middleware/authMiddleware");
+
 const {
-    createPurchase,
-    getAllPurchases,
-    getPurchaseById,
-    updatePurchaseStatus,
-    deletePurchase
+  createPurchase,
+  getPurchases,
+  getPurchaseById,
+  updatePurchase,
+  deletePurchase,
 } = require("../controllers/purchaseController");
 
-
-const authMiddleware = require("../middleware/authMiddleware");
-const roleMiddleware = require("../middleware/roleMiddleware");
-
-
-// ======================================
-// PURCHASE ROUTES
-// ======================================
-
-
 // Create Purchase
-// ADMIN + MANAGER
-
-router.post(
-    "/",
-    authMiddleware,
-    roleMiddleware("ADMIN", "MANAGER"),
-    createPurchase
-);
-
+router.post("/", authMiddleware, createPurchase);
 
 // Get All Purchases
-// ADMIN + MANAGER + EMPLOYEE
-
-router.get(
-    "/",
-    authMiddleware,
-    getAllPurchases
-);
-
+router.get("/", authMiddleware, getPurchases);
 
 // Get Purchase By ID
+router.get("/:id", authMiddleware, getPurchaseById);
 
-router.get(
-    "/:id",
-    authMiddleware,
-    getPurchaseById
-);
-
-
-// Update Purchase Status
-// ADMIN + MANAGER
-
-router.put(
-    "/:id",
-    authMiddleware,
-    roleMiddleware("ADMIN", "MANAGER"),
-    updatePurchaseStatus
-);
-
+// Update Purchase
+router.put("/:id", authMiddleware, updatePurchase);
 
 // Delete Purchase
-// ADMIN ONLY
-
-router.delete(
-    "/:id",
-    authMiddleware,
-    roleMiddleware("ADMIN"),
-    deletePurchase
-);
-
+router.delete("/:id", authMiddleware, deletePurchase);
 
 module.exports = router;

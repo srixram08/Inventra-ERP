@@ -152,7 +152,7 @@ exports.createSale = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Sale created successfully",
-      sale,
+      data: sale,
     });
   } catch (error) {
     console.error(error);
@@ -163,6 +163,7 @@ exports.createSale = async (req, res) => {
     });
   }
 };
+
 // ======================================
 // GET ALL SALES
 // ======================================
@@ -188,7 +189,7 @@ exports.getAllSales = async (req, res) => {
     res.status(200).json({
       success: true,
       count: sales.length,
-      sales,
+      data: sales,
     });
   } catch (error) {
     console.error(error);
@@ -231,43 +232,7 @@ exports.getSaleById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      sale,
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
-  }
-};
-// ======================================
-// GET ALL SALES
-// ======================================
-
-exports.getAllSales = async (req, res) => {
-  try {
-    const sales = await prisma.sale.findMany({
-      include: {
-        customer: true,
-
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      count: sales.length,
-      sales,
+      data: sale,
     });
   } catch (error) {
     console.error(error);
@@ -279,48 +244,6 @@ exports.getAllSales = async (req, res) => {
   }
 };
 
-// ======================================
-// GET SALE BY ID
-// ======================================
-
-exports.getSaleById = async (req, res) => {
-  try {
-    const sale = await prisma.sale.findUnique({
-      where: {
-        id: Number(req.params.id),
-      },
-
-      include: {
-        customer: true,
-
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-    });
-
-    if (!sale) {
-      return res.status(404).json({
-        success: false,
-        message: "Sale not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      sale,
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
-  }
-};
 // ======================================
 // UPDATE SALE STATUS
 // ======================================
@@ -361,7 +284,7 @@ exports.updateSaleStatus = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Sale status updated successfully",
-      sale: updatedSale,
+      data: updatedSale,
     });
   } catch (error) {
     console.error(error);

@@ -12,9 +12,9 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      String   @default("ADMIN")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  role      String   @default("ADMIN")
 }
 
 model Category {
@@ -24,83 +24,98 @@ model Category {
 }
 
 model Supplier {
-  id      Int     @id @default(autoincrement())
-  name    String
-  email   String?
-  phone   String?
-  address String?
-
-  products  Product[]
-  purchases Purchase[]
+  id          Int        @id @default(autoincrement())
+  name        String
+  companyName String?
+  email       String?
+  phone       String?
+  address     String?
+  products    Product[]
+  purchases   Purchase[]
 }
 
 model Product {
-  id    Int    @id @default(autoincrement())
-  name  String
-  sku   String @unique
-  price Float
-  stock Int    @default(0)
-
-  categoryId Int
-  supplierId Int
-
-  category Category @relation(fields: [categoryId], references: [id])
-  supplier Supplier @relation(fields: [supplierId], references: [id])
-
-  purchaseItems PurchaseItem[]
-  saleItems     SaleItem[]
+  id                    Int                    @id @default(autoincrement())
+  name                  String
+  sku                   String                 @unique
+  price                 Float
+  categoryId            Int
+  stock                 Int                    @default(0)
+  supplierId            Int
+  category              Category               @relation(fields: [categoryId], references: [id])
+  supplier              Supplier               @relation(fields: [supplierId], references: [id])
+  purchaseItems         PurchaseItem[]
+  saleItems             SaleItem[]
+  inventoryTransactions InventoryTransaction[]
 }
 
 model Customer {
-  id      Int     @id @default(autoincrement())
+  id      Int      @id @default(autoincrement())
   name    String
   email   String?
   phone   String?
   address String?
-
-  sales Sale[]
+  sales   Sale[]
 }
 
 model Purchase {
-  id            Int      @id @default(autoincrement())
-  invoiceNumber String   @unique
+  id            Int            @id @default(autoincrement())
+  invoiceNumber String         @unique
   supplierId    Int
   totalAmount   Float
-  createdAt     DateTime @default(now())
-
-  supplier Supplier       @relation(fields: [supplierId], references: [id])
-  items    PurchaseItem[]
+  createdAt     DateTime       @default(now())
+  notes         String?
+  purchaseDate  DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  supplier      Supplier       @relation(fields: [supplierId], references: [id])
+  items         PurchaseItem[]
 }
 
 model PurchaseItem {
-  id         Int   @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   purchaseId Int
   productId  Int
   quantity   Int
   price      Float
-
-  purchase Purchase @relation(fields: [purchaseId], references: [id])
-  product  Product  @relation(fields: [productId], references: [id])
+  subtotal   Float
+  product    Product  @relation(fields: [productId], references: [id])
+  purchase   Purchase @relation(fields: [purchaseId], references: [id])
 }
 
 model Sale {
-  id            Int      @id @default(autoincrement())
-  invoiceNumber String   @unique
+  id            Int        @id @default(autoincrement())
+  invoiceNumber String     @unique
   customerId    Int
   totalAmount   Float
-  createdAt     DateTime @default(now())
-
-  customer Customer   @relation(fields: [customerId], references: [id])
-  items    SaleItem[]
+  status        String     @default("COMPLETED")
+  createdAt     DateTime   @default(now())
+  customer      Customer   @relation(fields: [customerId], references: [id])
+  items         SaleItem[]
 }
 
 model SaleItem {
-  id        Int   @id @default(autoincrement())
-  saleId    Int
-  productId Int
-  quantity  Int
-  price     Float
+  id         Int     @id @default(autoincrement())
+  saleId     Int
+  productId  Int
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
+  product    Product @relation(fields: [productId], references: [id])
+  sale       Sale    @relation(fields: [saleId], references: [id])
+}
 
-  sale    Sale    @relation(fields: [saleId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+enum TransactionType {
+  STOCK_IN
+  STOCK_OUT
+  ADJUSTMENT
+}
+
+model InventoryTransaction {
+  id        Int             @id @default(autoincrement())
+  productId Int
+  type      TransactionType
+  quantity  Int
+  remarks   String?
+  createdAt DateTime        @default(now())
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

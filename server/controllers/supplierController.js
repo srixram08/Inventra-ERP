@@ -18,7 +18,7 @@ const createSupplier = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Supplier Created Successfully",
-      supplier,
+      data: supplier,
     });
   } catch (error) {
     res.status(500).json({
@@ -31,11 +31,15 @@ const createSupplier = async (req, res) => {
 // Get All Suppliers
 const getSuppliers = async (req, res) => {
   try {
-    const suppliers = await prisma.supplier.findMany();
+    const suppliers = await prisma.supplier.findMany({
+      orderBy: {
+        id: "desc",
+      },
+    });
 
     res.status(200).json({
       success: true,
-      suppliers,
+      data: suppliers,
     });
   } catch (error) {
     res.status(500).json({
@@ -63,7 +67,7 @@ const getSupplierById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      supplier,
+      data: supplier,
     });
   } catch (error) {
     res.status(500).json({
@@ -86,7 +90,7 @@ const updateSupplier = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Supplier Updated Successfully",
-      supplier,
+      data: supplier,
     });
   } catch (error) {
     res.status(500).json({

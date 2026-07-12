@@ -1,565 +1,479 @@
 const prisma = require("../config/prisma");
 
-
 // ======================================
 // CREATE PURCHASE
 // ======================================
 
 exports.createPurchase = async (req, res) => {
+  try {
+    const {
+      invoiceNumber,
+      supplierId,
+      purchaseDate,
+      notes,
+      items,
+    } = req.body;
 
-    try {
+    // -----------------------------
+    // Validation
+    // -----------------------------
 
-        const {
-            supplierId,
-            invoiceNumber,
-            items
-        } = req.body;
+    if (
+      !invoiceNumber ||
+      !supplierId ||
+      !items ||
+      items.length === 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invoice number, supplier and items are required",
+      });
+    }
 
+    // -----------------------------
+    // Check Supplier
+    // -----------------------------
 
-        if (!supplierId || !invoiceNumber || !items || items.length === 0) {
+    const supplier = await prisma.supplier.findUnique({
+      where: {
+        id: Number(supplierId),
+      },
+    });
 
-            return res.status(400).json({
-                success: false,
-                message: "Supplier, invoice number and items are required"
-            });
+    if (!supplier) {
+      return res.status(404).json({
+        success: false,
+        message: "Supplier not found",
+      });
+    }
 
+    // -----------------------------
+    // Duplicate Invoice Check
+    // -----------------------------
+
+    const existingPurchase =
+      await prisma.purchase.findUnique({
+        where: {
+          invoiceNumber,
+        },
+      });
+
+    if (existingPurchase) {
+      return res.status(400).json({
+        success: false,
+        message: "Invoice number already exists",
+      });
+    }
+
+    // -----------------------------
+    // Transaction
+    // -----------------------------
+
+    const purchase = await prisma.$transaction(
+      async (tx) => {
+        let totalAmount = 0;
+
+        // Calculate Total
+
+        for (const item of items) {
+          totalAmount +=
+            Number(item.quantity) *
+            Number(item.price);
         }
 
+        // Create Purchase
 
-        const purchase = await prisma.$transaction(async (tx) => {
+        const newPurchase =
+          await tx.purchase.create({
+            data: {
+              invoiceNumber,
+              supplierId: Number(supplierId),
+              purchaseDate: purchaseDate
+                ? new Date(purchaseDate)
+                : new Date(),
+              notes,
+              totalAmount,
+            },
+          });
 
+        // Create Purchase Items
+        // Update Product Stock
 
-            let totalAmount = 0;
-
-
-            items.forEach(item => {
-
-                totalAmount += 
-                    Number(item.quantity) * 
-                    Number(item.unitPrice);
-
+        for (const item of items) {
+          const product =
+            await tx.product.findUnique({
+              where: {
+                id: Number(item.productId),
+              },
             });
 
-
-
-            // Create Purchase
-
-            const newPurchase = await tx.purchase.create({
-
-                data: {
-
-                    supplierId: Number(supplierId),
-
-                    invoiceNumber,
-
-                    totalAmount,
-
-                    status: "RECEIVED"
-
-                }
-
-            });
-
-
-
-            // Create Purchase Items + Update Stock
-
-            for (const item of items) {
-
-
-                const product = await tx.product.findUnique({
-
-                    where: {
-                        id: Number(item.productId)
-                    }
-
-                });
-
-
-                if (!product) {
-
-                    throw new Error(
-                        `Product ${item.productId} not found`
-                    );
-
-                }
-
-
-
-                await tx.purchaseItem.create({
-
-                    data: {
-
-                        purchaseId: newPurchase.id,
-
-                        productId: Number(item.productId),
-
-                        quantity: Number(item.quantity),
-
-                        unitPrice: Number(item.unitPrice),
-
-                        totalPrice:
-                            Number(item.quantity) *
-                            Number(item.unitPrice)
-
-                    }
-
-                });
-
-
-
-                // Increase Product Stock
-
-                await tx.product.update({
-
-                    where: {
-
-                        id: Number(item.productId)
-
-                    },
-
-                    data: {
-
-                        stock: {
-
-                            increment:
-                                Number(item.quantity)
-
-                        }
-
-                    }
-
-                });
-
-
-
-                // Inventory History
-
-                await tx.inventoryTransaction.create({
-
-                    data: {
-
-                        productId:
-                            Number(item.productId),
-
-                        type: "STOCK_IN",
-
-                        quantity:
-                            Number(item.quantity),
-
-                        remarks:
-                            `Purchase Invoice ${invoiceNumber}`
-
-                    }
-
-                });
-
-
-            }
-
-
-
-            return newPurchase;
-
-
-        });
-
-
-
-        res.status(201).json({
-
-            success: true,
-
-            message: "Purchase created successfully",
-
-            purchase
-
-        });
-
-
-
-    }
-    catch(error){
-
-        console.error(error);
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:error.message
-
-        });
-
-    }
-
+          if (!product) {
+            throw new Error(
+              `Product ${item.productId} not found`
+            );
+          }
+
+          const subtotal =
+            Number(item.quantity) *
+            Number(item.price);
+
+          await tx.purchaseItem.create({
+            data: {
+              purchaseId: newPurchase.id,
+              productId: Number(item.productId),
+              quantity: Number(item.quantity),
+              price: Number(item.price),
+              subtotal,
+            },
+          });
+
+          await tx.product.update({
+            where: {
+              id: Number(item.productId),
+            },
+            data: {
+              stock: {
+                increment: Number(item.quantity),
+              },
+            },
+          });
+        }
+
+        return newPurchase;
+      }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Purchase created successfully",
+      data: purchase,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
-
-
-
-
 // ======================================
 // GET ALL PURCHASES
 // ======================================
 
-exports.getAllPurchases = async (req,res)=>{
+exports.getPurchases = async (req, res) => {
+  try {
+    const purchases = await prisma.purchase.findMany({
+      include: {
+        supplier: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+      orderBy: {
+        id: "desc",
+      },
+    });
 
-    try{
+    res.status(200).json({
+      success: true,
+      count: purchases.length,
+      data: purchases,
+    });
+  } catch (error) {
+    console.log(error);
 
-
-        const purchases = await prisma.purchase.findMany({
-
-            include:{
-
-                supplier:true,
-
-                items:{
-
-                    include:{
-
-                        product:true
-
-                    }
-
-                }
-
-            },
-
-
-            orderBy:{
-
-                createdAt:"desc"
-
-            }
-
-
-        });
-
-
-
-        res.status(200).json({
-
-            success:true,
-
-            count:purchases.length,
-
-            purchases
-
-        });
-
-
-    }
-    catch(error){
-
-
-        console.error(error);
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:"Internal Server Error"
-
-        });
-
-
-    }
-
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch purchases",
+      error: error.message,
+    });
+  }
 };
-
-
-
 
 // ======================================
 // GET PURCHASE BY ID
 // ======================================
 
-exports.getPurchaseById = async(req,res)=>{
+exports.getPurchaseById = async (req, res) => {
+  try {
+    const purchase = await prisma.purchase.findUnique({
+      where: {
+        id: Number(req.params.id),
+      },
+      include: {
+        supplier: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
 
-    try{
-
-
-        const purchase = await prisma.purchase.findUnique({
-
-            where:{
-
-                id:Number(req.params.id)
-
-            },
-
-
-            include:{
-
-                supplier:true,
-
-
-                items:{
-
-                    include:{
-
-                        product:true
-
-                    }
-
-                }
-
-            }
-
-
-        });
-
-
-
-        if(!purchase){
-
-            return res.status(404).json({
-
-                success:false,
-
-                message:"Purchase not found"
-
-            });
-
-        }
-
-
-
-        res.status(200).json({
-
-            success:true,
-
-            purchase
-
-        });
-
-
-
-    }
-    catch(error){
-
-
-        console.error(error);
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:"Internal Server Error"
-
-        });
-
-
+    if (!purchase) {
+      return res.status(404).json({
+        success: false,
+        message: "Purchase not found",
+      });
     }
 
+    res.status(200).json({
+      success: true,
+      data: purchase,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch purchase",
+      error: error.message,
+    });
+  }
 };
-
-
-
-
 // ======================================
-// UPDATE PURCHASE STATUS
+// UPDATE PURCHASE
 // ======================================
 
-exports.updatePurchaseStatus = async(req,res)=>{
+exports.updatePurchase = async (req, res) => {
+  try {
+    const purchaseId = Number(req.params.id);
 
-    try{
+    const {
+      invoiceNumber,
+      supplierId,
+      purchaseDate,
+      notes,
+      items,
+    } = req.body;
 
+    // Validation
 
-        const {status}=req.body;
+    if (
+      !invoiceNumber ||
+      !supplierId ||
+      !items ||
+      items.length === 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invoice number, supplier and items are required",
+      });
+    }
 
+    // Existing Purchase
 
+    const existingPurchase = await prisma.purchase.findUnique({
+      where: {
+        id: purchaseId,
+      },
+      include: {
+        items: true,
+      },
+    });
 
-        const purchase = await prisma.purchase.update({
+    if (!existingPurchase) {
+      return res.status(404).json({
+        success: false,
+        message: "Purchase not found",
+      });
+    }
 
-            where:{
+    // Check Duplicate Invoice
 
-                id:Number(req.params.id)
+    const duplicateInvoice = await prisma.purchase.findFirst({
+      where: {
+        invoiceNumber,
+        NOT: {
+          id: purchaseId,
+        },
+      },
+    });
 
+    if (duplicateInvoice) {
+      return res.status(400).json({
+        success: false,
+        message: "Invoice number already exists",
+      });
+    }
+
+    const purchase = await prisma.$transaction(async (tx) => {
+
+      // Restore Previous Stock
+
+      for (const item of existingPurchase.items) {
+        await tx.product.update({
+          where: {
+            id: item.productId,
+          },
+          data: {
+            stock: {
+              decrement: item.quantity,
             },
+          },
+        });
+      }
 
+      // Delete Previous Purchase Items
 
-            data:{
+      await tx.purchaseItem.deleteMany({
+        where: {
+          purchaseId,
+        },
+      });
 
-                status
+      let totalAmount = 0;
 
-            }
+      // Create New Purchase Items
 
+      for (const item of items) {
 
+        const subtotal =
+          Number(item.quantity) *
+          Number(item.price);
+
+        totalAmount += subtotal;
+
+        await tx.purchaseItem.create({
+          data: {
+            purchaseId,
+            productId: Number(item.productId),
+            quantity: Number(item.quantity),
+            price: Number(item.price),
+            subtotal,
+          },
         });
 
+        // Increase Stock Again
 
-
-        res.status(200).json({
-
-            success:true,
-
-            message:"Purchase status updated successfully",
-
-            purchase
-
+        await tx.product.update({
+          where: {
+            id: Number(item.productId),
+          },
+          data: {
+            stock: {
+              increment: Number(item.quantity),
+            },
+          },
         });
+      }
 
+      // Update Purchase
 
-    }
-    catch(error){
+      return await tx.purchase.update({
+        where: {
+          id: purchaseId,
+        },
+        data: {
+          invoiceNumber,
+          supplierId: Number(supplierId),
+          purchaseDate: purchaseDate
+            ? new Date(purchaseDate)
+            : new Date(),
+          notes,
+          totalAmount,
+        },
+        include: {
+          supplier: true,
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
 
+    });
 
-        console.error(error);
+    res.status(200).json({
+      success: true,
+      message: "Purchase updated successfully",
+      data: purchase,
+    });
 
+  } catch (error) {
+    console.log(error);
 
-        res.status(500).json({
-
-            success:false,
-
-            message:"Internal Server Error"
-
-        });
-
-
-    }
-
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
-
-
-
-
 // ======================================
 // DELETE PURCHASE
 // ======================================
 
-exports.deletePurchase = async(req,res)=>{
+exports.deletePurchase = async (req, res) => {
+  try {
+    const purchaseId = Number(req.params.id);
 
-    try{
+    const purchase = await prisma.purchase.findUnique({
+      where: {
+        id: purchaseId,
+      },
+      include: {
+        items: true,
+      },
+    });
 
+    if (!purchase) {
+      return res.status(404).json({
+        success: false,
+        message: "Purchase not found",
+      });
+    }
 
-        const purchase = await prisma.purchase.findUnique({
+    await prisma.$transaction(async (tx) => {
 
-            where:{
+      // Reduce Product Stock
 
-                id:Number(req.params.id)
-
+      for (const item of purchase.items) {
+        await tx.product.update({
+          where: {
+            id: item.productId,
+          },
+          data: {
+            stock: {
+              decrement: item.quantity,
             },
-
-            include:{
-
-                items:true
-
-            }
-
+          },
         });
-
-
-
-        if(!purchase){
-
-            return res.status(404).json({
-
-                success:false,
-
-                message:"Purchase not found"
-
-            });
-
-        }
-
-
-
-        await prisma.$transaction(async(tx)=>{
-
-
-            // Reduce stock before deleting purchase
-
-            for(const item of purchase.items){
-
-
-                await tx.product.update({
-
-                    where:{
-
-                        id:item.productId
-
-                    },
-
-
-                    data:{
-
-                        stock:{
-
-                            decrement:item.quantity
-
-                        }
-
-                    }
-
-                });
-
-
-                await tx.inventoryTransaction.create({
-
-                    data:{
-
-                        productId:item.productId,
-
-                        type:"ADJUSTMENT",
-
-                        quantity:item.quantity,
-
-                        remarks:
-                        `Purchase ${purchase.invoiceNumber} deleted`
-
-                    }
-
-                });
-
-
-            }
-
-
-
-            await tx.purchase.delete({
-
-                where:{
-
-                    id:Number(req.params.id)
-
-                }
-
-            });
-
-
-        });
-
-
-
-        res.status(200).json({
-
-            success:true,
-
-            message:"Purchase deleted successfully"
-
-        });
-
-
-
-    }
-    catch(error){
-
-
-        console.error(error);
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:"Internal Server Error"
-
-        });
-
-
-    }
-
+      }
+
+      // Delete Purchase Items
+
+      await tx.purchaseItem.deleteMany({
+        where: {
+          purchaseId,
+        },
+      });
+
+      // Delete Purchase
+
+      await tx.purchase.delete({
+        where: {
+          id: purchaseId,
+        },
+      });
+
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Purchase deleted successfully",
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };

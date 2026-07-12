@@ -59,7 +59,11 @@ function Sidebar() {
       icon: Truck,
       path: "/suppliers",
     },
-
+    {
+      name: "Purchases",
+      path: "/purchases",
+      icon: ShoppingCart,
+    },
 
     {
       name: "Reports",
