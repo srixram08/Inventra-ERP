@@ -1,8 +1,39 @@
-import { Bell, UserCircle } from "lucide-react";
+import { Bell, UserCircle, Package, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { getLowStock } from "../api/inventoryApi";
 
 function Navbar() {
   const location = useLocation();
+  const [lowStockAlerts, setLowStockAlerts] = useState([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    fetchAlerts();
+
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const fetchAlerts = async () => {
+    try {
+      const res = await getLowStock();
+      if (res.success) {
+        setLowStockAlerts(res.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch low stock alerts", error);
+    }
+  };
 
   const getPageTitle = (path) => {
     if (path.startsWith("/dashboard")) return "Dashboard Overview";
@@ -22,11 +53,65 @@ function Navbar() {
       </h2>
 
       <div className="flex items-center gap-6">
-        <button className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition-all duration-200">
-          <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full animate-ping"></span>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
-        </button>
+        {/* Notification Dropdown Container */}
+        <div className="relative" ref={dropdownRef}>
+          <button 
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl transition-all duration-200"
+          >
+            <Bell size={20} />
+            {lowStockAlerts.length > 0 && (
+              <>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-600 rounded-full animate-ping"></span>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-600 rounded-full"></span>
+              </>
+            )}
+          </button>
+
+          {/* Dropdown Menu */}
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-fade-in z-50">
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 className="font-bold text-slate-800">Notifications</h3>
+                <span className="text-xs font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
+                  {lowStockAlerts.length} Alerts
+                </span>
+              </div>
+              
+              <div className="max-h-80 overflow-y-auto">
+                {lowStockAlerts.length === 0 ? (
+                  <div className="p-6 text-center text-slate-400">
+                    <p className="text-sm">No new notifications</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50">
+                    {lowStockAlerts.map((item) => (
+                      <div key={item.id} className="p-4 hover:bg-slate-50 transition-colors flex gap-3 items-start">
+                        <div className="p-2 bg-red-50 text-red-500 rounded-lg shrink-0">
+                          <Package size={16} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">{item.name}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Low stock alert: Only <span className="font-bold text-red-600">{item.stock}</span> units remaining.
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="p-3 border-t border-slate-100 text-center bg-slate-50">
+                <button 
+                  onClick={() => setIsDropdownOpen(false)}
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-3.5 pl-4 border-l border-slate-200">
           <div className="flex flex-col text-right">
